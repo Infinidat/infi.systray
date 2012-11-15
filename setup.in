@@ -5,7 +5,7 @@ SETUP_INFO = dict(
     author = '${infi.recipe.template.version:author}',
     author_email = '${infi.recipe.template.version:author_email}',
 
-    url = 'http://www.infinidat.com',
+    url = ${infi.recipe.template.version:homepage},
     license = 'PSF',
     description = """${project:description}""",
     long_description = """${project:long_description}""",
@@ -14,6 +14,8 @@ SETUP_INFO = dict(
     classifiers = [
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.2",
         "License :: OSI Approved :: Python Software Foundation License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
@@ -30,8 +32,12 @@ SETUP_INFO = dict(
 
     entry_points = dict(
         console_scripts = ${project:console_scripts},
-        gui_scripts = []),
-    )
+        gui_scripts = ${project:gui_scripts},
+        ),
+)
+
+if SETUP_INFO['url'] is None:
+    _ = SETUP_INFO.pop('url')
 
 def setup():
     from setuptools import setup as _setup
