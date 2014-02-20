@@ -53,3 +53,4 @@ tmp*
 buildout.in
 
 src/infi/systray/__version__.py
+bootstrap.py
