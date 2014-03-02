@@ -1,13 +1,13 @@
 import os
 from win32_adapter import *
 import threading
+import uuid
 
 class SysTrayIcon(object):
     QUIT = 'QUIT'
     SPECIAL_ACTIONS = [QUIT]
 
     FIRST_ID = 1023
-    _instance_count = 1
 
     def __init__(self,
                  icon,
@@ -28,8 +28,7 @@ class SysTrayIcon(object):
         self._menu_options = self._add_ids_to_menu_options(list(menu_options))
         self._menu_actions_by_id = dict(self._menu_actions_by_id)
 
-        window_class_name = window_class_name or ("SysTrayIconPy_%d" % (SysTrayIcon._instance_count))
-        SysTrayIcon._instance_count += 1
+        window_class_name = window_class_name or ("SysTrayIconPy-%s" % (str(uuid.uuid4())))
 
         self._default_menu_index = (default_menu_index or 0)
         self._window_class_name = convert_to_ascii(window_class_name)
@@ -161,7 +160,7 @@ class SysTrayIcon(object):
 
     def _notify(self, hwnd, msg, wparam, lparam):
         if lparam == WM_LBUTTONDBLCLK:
-            self._execute_menu_option(self._default_menu_index + self.FIRST_ID)
+            self._execute_menu_option(self._default_menu_index + SysTrayIcon.FIRST_ID)
         elif lparam == WM_RBUTTONUP:
             self._show_menu()
         elif lparam == WM_LBUTTONUP:
