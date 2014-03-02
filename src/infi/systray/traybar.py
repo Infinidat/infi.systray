@@ -36,6 +36,8 @@ class SysTrayIcon(object):
                              WM_USER+20: self._notify}
         self.notify_id = None
         self.message_loop_thread = None
+        self.hwnd = None
+        self.hicon = 0
         self._register_class()
 
     def set_icon(self, icon=None, hover_text=None):
@@ -111,17 +113,18 @@ class SysTrayIcon(object):
         return result
 
     def _refresh_icon(self):
-        # Try and find a custom icon
+        if self.hwnd is None:
+            return
+        # release previous icon, if a custom one was loaded
+        if self.hicon != 0:
+            DestroyIcon(self.hicon)
+            self.hicon = 0
         hicon = 0
+        # Try and find a custom icon
         if self.icon is not None and os.path.isfile(self.icon):
             icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
             icon = convert_to_ascii(self.icon)
-            hicon = LoadImage(0,
-                              icon,
-                              IMAGE_ICON,
-                              0,
-                              0,
-                              icon_flags)
+            hicon = self.hicon = LoadImage(0, icon, IMAGE_ICON, 0, 0, icon_flags)
         if hicon == 0:
             # Can't find icon file - using default
             hicon = LoadIcon(0, IDI_APPLICATION)
@@ -147,6 +150,8 @@ class SysTrayIcon(object):
         nid = NotifyData(self.hwnd, 0)
         Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
         PostQuitMessage(0)  # Terminate the app.
+        self.hwnd = None
+        self.notify_id = None
 
     def _notify(self, hwnd, msg, wparam, lparam):
         if lparam == WM_LBUTTONDBLCLK:
