@@ -210,8 +210,8 @@ class SysTrayIcon(object):
         ico_y = GetSystemMetrics(SM_CYSMICON)
         hicon = LoadImage(0, icon, IMAGE_ICON, ico_x, ico_y, LR_LOADFROMFILE)
 
-        hdcBitmap = CreateCompatibleDC(0)
-        hdcScreen = GetDC(0)
+        hdcBitmap = CreateCompatibleDC(None)
+        hdcScreen = GetDC(None)
         hbm = CreateCompatibleBitmap(hdcScreen, ico_x, ico_y)
         hbmOld = SelectObject(hdcBitmap, hbm)
         # Fill the background.
