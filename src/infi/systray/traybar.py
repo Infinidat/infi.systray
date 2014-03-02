@@ -43,6 +43,7 @@ class SysTrayIcon(object):
         self._hicon = 0
         self._hinst = None
         self._window_class = None
+        self._menu = None
         self._register_class()
 
     def set_icon(self, icon=None, hover_text=None):
@@ -168,15 +169,16 @@ class SysTrayIcon(object):
         return True
 
     def _show_menu(self):
-        menu = CreatePopupMenu()
-        self._create_menu(menu, self._menu_options)
-        #SetMenuDefaultItem(menu, 1000, 0)
+        if self._menu is None:
+            self._menu = CreatePopupMenu()
+            self._create_menu(self._menu, self._menu_options)
+            #SetMenuDefaultItem(self._menu, 1000, 0)
 
         pos = POINT()
         GetCursorPos(ctypes.byref(pos))
         # See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/menus_0hdi.asp
         SetForegroundWindow(self._hwnd)
-        TrackPopupMenu(menu,
+        TrackPopupMenu(self._menu,
                        TPM_LEFTALIGN,
                        pos.x,
                        pos.y,
@@ -217,13 +219,13 @@ class SysTrayIcon(object):
         # Fill the background.
         brush = GetSysColorBrush(COLOR_MENU)
         FillRect(hdcBitmap, ctypes.byref(RECT(0, 0, 16, 16)), brush)
-        # unclear if brush needs to be feed.  Best clue I can find is:
-        # "GetSysColorBrush returns a cached brush instead of allocating a new
-        # one." - implies no DeleteObject
         # draw the icon
         DrawIconEx(hdcBitmap, 0, 0, hicon, ico_x, ico_y, 0, 0, DI_NORMAL)
         SelectObject(hdcBitmap, hbmOld)
+
+        # No need to free the brush
         DeleteDC(hdcBitmap)
+        DestroyIcon(hicon)
 
         return hbm
 
