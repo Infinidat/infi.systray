@@ -38,6 +38,14 @@ class SysTrayIcon(object):
         self.message_loop_thread = None
         self._register_class()
 
+    def set_icon(self, icon=None, hover_text=None):
+        """ update icon image and/or hover text """
+        if icon:
+            self.icon = icon
+        if hover_text:
+            self.hover_text = hover_text
+        self._refresh_icon()
+
     def WndProc(self, hwnd, msg, wparam, lparam):
         hwnd = HANDLE(hwnd)
         wparam = WPARAM(wparam)
