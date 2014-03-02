@@ -1,14 +1,13 @@
 import os
-import sys
 from win32_adapter import *
 import threading
-    
+
 class SysTrayIcon(object):
     QUIT = 'QUIT'
     SPECIAL_ACTIONS = [QUIT]
-    
+
     FIRST_ID = 1023
-    
+
     def __init__(self,
                  icon,
                  hover_text,
@@ -16,25 +15,25 @@ class SysTrayIcon(object):
                  on_quit=None,
                  default_menu_index=None,
                  window_class_name="SysTrayIconPy"):
-        
+
         self.icon = icon
         self.hover_text = hover_text
         self.on_quit = on_quit
-        
+
         menu_options = menu_options or ()
         menu_options = menu_options + (('Quit', None, self.QUIT),)
         self._next_action_id = self.FIRST_ID
         self.menu_actions_by_id = set()
         self.menu_options = self._add_ids_to_menu_options(list(menu_options))
         self.menu_actions_by_id = dict(self.menu_actions_by_id)
-        
+
         self.default_menu_index = (default_menu_index or 0)
         self.window_class_name = convert_to_ascii(window_class_name)
         self.message_dict = {RegisterWindowMessage("TaskbarCreated"): self._restart,
                              WM_DESTROY: self._destroy,
                              WM_CLOSE: self._destroy,
                              WM_COMMAND: self._command,
-                             WM_USER+20 : self._notify,}
+                             WM_USER+20: self._notify}
         self.notify_id = None
         self.message_loop_thread = None
         self._register_class()
@@ -54,17 +53,17 @@ class SysTrayIcon(object):
         if msg in self.message_dict:
             self.message_dict[msg](hwnd, msg, wparam.value, lparam.value)
         return DefWindowProc(hwnd, msg, wparam, lparam)
-        
+
     def _register_class(self):
         # Register the Window class.
         self.window_class = WNDCLASS()
         self.hinst = self.window_class.hInstance = GetModuleHandle(None)
         self.window_class.lpszClassName = self.window_class_name
-        self.window_class.style = CS_VREDRAW | CS_HREDRAW;
+        self.window_class.style = CS_VREDRAW | CS_HREDRAW
         self.window_class.hCursor = LoadCursor(0, IDC_ARROW)
         self.window_class.hbrBackground = COLOR_WINDOW
         self.window_class.lpfnWndProc = LPFN_WNDPROC(self.WndProc)
-        classAtom = RegisterClass(ctypes.byref(self.window_class))
+        RegisterClass(ctypes.byref(self.window_class))
 
     def _create_window(self):
         style = WS_OVERLAPPED | WS_SYSMENU
@@ -110,7 +109,7 @@ class SysTrayIcon(object):
                 raise Exception('Unknown item', option_text, option_icon, option_action)
             self._next_action_id += 1
         return result
-        
+
     def _refresh_icon(self):
         # Try and find a custom icon
         hicon = 0
@@ -127,8 +126,10 @@ class SysTrayIcon(object):
             # Can't find icon file - using default
             hicon = LoadIcon(0, IDI_APPLICATION)
 
-        if self.notify_id: message = NIM_MODIFY
-        else: message = NIM_ADD
+        if self.notify_id:
+            message = NIM_MODIFY
+        else:
+            message = NIM_ADD
         self.notify_id = NotifyData(self.hwnd,
                           0,
                           NIF_ICON | NIF_MESSAGE | NIF_TIP,
@@ -141,10 +142,11 @@ class SysTrayIcon(object):
         self._refresh_icon()
 
     def _destroy(self, hwnd, msg, wparam, lparam):
-        if self.on_quit: self.on_quit(self)
+        if self.on_quit:
+            self.on_quit(self)
         nid = NotifyData(self.hwnd, 0)
         Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
-        PostQuitMessage(0) # Terminate the app.
+        PostQuitMessage(0)  # Terminate the app.
 
     def _notify(self, hwnd, msg, wparam, lparam):
         if lparam == WM_LBUTTONDBLCLK:
@@ -154,12 +156,12 @@ class SysTrayIcon(object):
         elif lparam == WM_LBUTTONUP:
             pass
         return True
-        
+
     def _show_menu(self):
         menu = CreatePopupMenu()
         self._create_menu(menu, self.menu_options)
         #SetMenuDefaultItem(menu, 1000, 0)
-        
+
         pos = POINT()
         GetCursorPos(ctypes.byref(pos))
         # See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/menus_0hdi.asp
@@ -172,13 +174,13 @@ class SysTrayIcon(object):
                        self.hwnd,
                        None)
         PostMessage(self.hwnd, WM_NULL, 0, 0)
-    
+
     def _create_menu(self, menu, menu_options):
         for option_text, option_icon, option_action, option_id in menu_options[::-1]:
             if option_icon:
                 option_icon = self._prep_menu_icon(option_icon)
-            
-            if option_id in self.menu_actions_by_id:                
+
+            if option_id in self.menu_actions_by_id:
                 item = PackMENUITEMINFO(text=option_text,
                                         hbmpItem=option_icon,
                                         wID=option_id)
@@ -212,20 +214,20 @@ class SysTrayIcon(object):
         DrawIconEx(hdcBitmap, 0, 0, hicon, ico_x, ico_y, 0, 0, DI_NORMAL)
         SelectObject(hdcBitmap, hbmOld)
         DeleteDC(hdcBitmap)
-        
+
         return hbm
 
     def _command(self, hwnd, msg, wparam, lparam):
         id = LOWORD(wparam)
         self._execute_menu_option(id)
-        
+
     def _execute_menu_option(self, id):
         menu_action = self.menu_actions_by_id[id]
         if menu_action == self.QUIT:
             DestroyWindow(self.hwnd)
         else:
             menu_action(self)
-            
+
 def non_string_iterable(obj):
     try:
         iter(obj)
