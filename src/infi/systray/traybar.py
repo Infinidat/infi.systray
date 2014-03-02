@@ -7,6 +7,7 @@ class SysTrayIcon(object):
     SPECIAL_ACTIONS = [QUIT]
 
     FIRST_ID = 1023
+    _instance_count = 1
 
     def __init__(self,
                  icon,
@@ -14,7 +15,7 @@ class SysTrayIcon(object):
                  menu_options=None,
                  on_quit=None,
                  default_menu_index=None,
-                 window_class_name="SysTrayIconPy"):
+                 window_class_name=None):
 
         self.icon = icon
         self.hover_text = hover_text
@@ -26,6 +27,9 @@ class SysTrayIcon(object):
         self.menu_actions_by_id = set()
         self.menu_options = self._add_ids_to_menu_options(list(menu_options))
         self.menu_actions_by_id = dict(self.menu_actions_by_id)
+
+        window_class_name = window_class_name or ("SysTrayIconPy_%d" % (SysTrayIcon._instance_count))
+        SysTrayIcon._instance_count += 1
 
         self.default_menu_index = (default_menu_index or 0)
         self.window_class_name = convert_to_ascii(window_class_name)
