@@ -12,7 +12,7 @@ class SysTrayIcon(object):
     def __init__(self,
                  icon,
                  hover_text,
-                 menu_options,
+                 menu_options=None,
                  on_quit=None,
                  default_menu_index=None,
                  window_class_name="SysTrayIconPy"):
@@ -21,6 +21,7 @@ class SysTrayIcon(object):
         self.hover_text = hover_text
         self.on_quit = on_quit
         
+        menu_options = menu_options or ()
         menu_options = menu_options + (('Quit', None, self.QUIT),)
         self._next_action_id = self.FIRST_ID
         self.menu_actions_by_id = set()
