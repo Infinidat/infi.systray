@@ -121,21 +121,21 @@ class SysTrayIcon(object):
 
     def _load_icon(self):
        # release previous icon, if a custom one was loaded
-        if self._hicon !=0:
+        if self._icon is not None and self._hicon !=0:
             DestroyIcon(self._hicon)
             self._hicon = 0
             
         # Try and find a custom icon    
         hicon = 0
-        # Try and find a custom icon
         if self._icon is not None and os.path.isfile(self._icon):
             icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
             icon = convert_to_ascii(self._icon)
             hicon = self._hicon = LoadImage(0, icon, IMAGE_ICON, 0, 0, icon_flags)
+            
+        # Can't find icon file - using default
         if hicon == 0:
-            # Can't find icon file - using default
-            hicon = LoadIcon(0, IDI_APPLICATION)
-        self._hicon = hicon
+            self._hicon = LoadIcon(0, IDI_APPLICATION)
+            self._icon = None
     
     def _refresh_icon(self):
         if self._hwnd is None:
