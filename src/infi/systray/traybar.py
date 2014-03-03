@@ -46,14 +46,6 @@ class SysTrayIcon(object):
         self._menu = None
         self._register_class()
 
-    def set_icon(self, icon=None, hover_text=None):
-        """ update icon image and/or hover text """
-        if icon:
-            self._icon = icon
-        if hover_text:
-            self._hover_text = hover_text
-        self._refresh_icon()
-
     def WndProc(self, hwnd, msg, wparam, lparam):
         hwnd = HANDLE(hwnd)
         wparam = WPARAM(wparam)
@@ -101,6 +93,15 @@ class SysTrayIcon(object):
         PostMessage(self._hwnd, WM_CLOSE, 0, 0)
         self._message_loop_thread.join()
 
+    def update(self, icon=None, hover_text=None):
+        """ update icon image and/or hover text """
+        if icon:
+            self._icon = icon
+            self._load_icon()
+        if hover_text:
+            self._hover_text = hover_text
+        self._refresh_icon()
+
     def _add_ids_to_menu_options(self, menu_options):
         result = []
         for menu_option in menu_options:
@@ -118,23 +119,29 @@ class SysTrayIcon(object):
             self._next_action_id += 1
         return result
 
-    def _refresh_icon(self):
-        if self._hwnd is None:
-            return
-        # release previous icon, if a custom one was loaded
-        if self._hicon != 0:
+    def _load_icon(self):
+       # release previous icon, if a custom one was loaded
+        if self._icon is not None and self._hicon !=0:
             DestroyIcon(self._hicon)
             self._hicon = 0
+            
+        # Try and find a custom icon    
         hicon = 0
-        # Try and find a custom icon
         if self._icon is not None and os.path.isfile(self._icon):
             icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
             icon = convert_to_ascii(self._icon)
             hicon = self._hicon = LoadImage(0, icon, IMAGE_ICON, 0, 0, icon_flags)
+            
+        # Can't find icon file - using default
         if hicon == 0:
-            # Can't find icon file - using default
-            hicon = LoadIcon(0, IDI_APPLICATION)
-
+            self._hicon = LoadIcon(0, IDI_APPLICATION)
+            self._icon = None
+    
+    def _refresh_icon(self):
+        if self._hwnd is None:
+            return
+        if self._hicon == 0:
+            self._load_icon()
         if self._notify_id:
             message = NIM_MODIFY
         else:
@@ -143,7 +150,7 @@ class SysTrayIcon(object):
                           0,
                           NIF_ICON | NIF_MESSAGE | NIF_TIP,
                           WM_USER+20,
-                          hicon,
+                          self._hicon,
                           self._hover_text)
         Shell_NotifyIcon(message, ctypes.byref(self._notify_id))
 
