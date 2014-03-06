@@ -46,14 +46,6 @@ class SysTrayIcon(object):
         self._menu = None
         self._register_class()
 
-    def update(self, icon=None, hover_text=None):
-        """ update icon image and/or hover text """
-        if icon:
-            self._icon = icon
-        if hover_text:
-            self._hover_text = hover_text
-        self._refresh_icon()
-
     def WndProc(self, hwnd, msg, wparam, lparam):
         hwnd = HANDLE(hwnd)
         wparam = WPARAM(wparam)
@@ -101,6 +93,14 @@ class SysTrayIcon(object):
         PostMessage(self._hwnd, WM_CLOSE, 0, 0)
         self._message_loop_thread.join()
 
+    def update(self, icon=None, hover_text=None):
+        """ update icon image and/or hover text """
+        if icon:
+            self._icon = icon
+        if hover_text:
+            self._hover_text = hover_text
+        self._refresh_icon()
+
     def _add_ids_to_menu_options(self, menu_options):
         result = []
         for menu_option in menu_options:
@@ -118,10 +118,10 @@ class SysTrayIcon(object):
             self._next_action_id += 1
         return result
 
-    def _refresh_icon(self):
-        if self._hwnd is None:
-            return
+    def _load_icon(self):
         # release previous icon, if a custom one was loaded
+        # note: it's important *not* to release the icon if we loaded the default system icon (with
+        # the LoadIcon function) - this is why we assign self._hicon only if it was loaded using LoadImage
         if self._hicon != 0:
             DestroyIcon(self._hicon)
             self._hicon = 0
@@ -134,7 +134,12 @@ class SysTrayIcon(object):
         if hicon == 0:
             # Can't find icon file - using default
             hicon = LoadIcon(0, IDI_APPLICATION)
+        return hicon
 
+    def _refresh_icon(self):
+        if self._hwnd is None:
+            return
+        hicon = self._load_icon()
         if self._notify_id:
             message = NIM_MODIFY
         else:
@@ -190,7 +195,7 @@ class SysTrayIcon(object):
     def _create_menu(self, menu, menu_options):
         for option_text, option_icon, option_action, option_id in menu_options[::-1]:
             if option_icon:
-                option_icon = self._prep_menu_icon(option_icon)
+                option_icon = self._load_menu_icon(option_icon)
 
             if option_id in self._menu_actions_by_id:
                 item = PackMENUITEMINFO(text=option_text,
@@ -205,7 +210,7 @@ class SysTrayIcon(object):
                                         hSubMenu=submenu)
                 InsertMenuItem(menu, 0, 1,  ctypes.byref(item))
 
-    def _prep_menu_icon(self, icon):
+    def _load_menu_icon(self, icon):
         icon = convert_to_ascii(icon)
         # First load the icon.
         ico_x = GetSystemMetrics(SM_CXSMICON)
