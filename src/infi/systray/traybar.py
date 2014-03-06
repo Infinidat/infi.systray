@@ -86,10 +86,14 @@ class SysTrayIcon(object):
         PumpMessages()
 
     def start(self):
+        if self._hwnd:
+            return      # already started
         self._message_loop_thread = threading.Thread(target=self._message_loop_func)
         self._message_loop_thread.start()
 
     def shutdown(self):
+        if not self._hwnd:
+            return      # not started
         PostMessage(self._hwnd, WM_CLOSE, 0, 0)
         self._message_loop_thread.join()
 
