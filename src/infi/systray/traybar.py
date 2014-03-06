@@ -126,6 +126,7 @@ class SysTrayIcon(object):
         # release previous icon, if a custom one was loaded
         # note: it's important *not* to release the icon if we loaded the default system icon (with
         # the LoadIcon function) - this is why we assign self._hicon only if it was loaded using LoadImage
+        # TODO don't reload if not necessary
         if self._hicon != 0:
             DestroyIcon(self._hicon)
             self._hicon = 0
@@ -165,6 +166,10 @@ class SysTrayIcon(object):
         nid = NotifyData(self._hwnd, 0)
         Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
         PostQuitMessage(0)  # Terminate the app.
+        # TODO * release self._menu with DestroyMenu and reset the memeber
+        #      * release self._hicon with DestoryIcon and reset the member
+        #      * release loaded menu icons (loaded in _load_menu_icon) with DeleteObject
+        #        (we don't keep those objects anywhere now)
         self._hwnd = None
         self._notify_id = None
 
