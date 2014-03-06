@@ -46,7 +46,7 @@ class SysTrayIcon(object):
         self._menu = None
         self._register_class()
 
-    def set_icon(self, icon=None, hover_text=None):
+    def update(self, icon=None, hover_text=None):
         """ update icon image and/or hover text """
         if icon:
             self._icon = icon
