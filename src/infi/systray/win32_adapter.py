@@ -31,6 +31,7 @@ GetMessage = ctypes.windll.user32.GetMessageA
 TranslateMessage = ctypes.windll.user32.TranslateMessage
 DispatchMessage = ctypes.windll.user32.DispatchMessageA
 Shell_NotifyIcon = ctypes.windll.shell32.Shell_NotifyIcon
+DestroyIcon = ctypes.windll.user32.DestroyIcon
 
 NIM_ADD = 0
 NIM_MODIFY = 1
@@ -98,7 +99,7 @@ class WNDCLASS(ctypes.Structure):
                 ("lpszMenuName", ctypes.c_char_p),
                 ("lpszClassName", ctypes.c_char_p),
                ]
-               
+
 class POINT(ctypes.Structure):
     _fields_ = [('x', ctypes.c_long), ('y', ctypes.c_long)]
 
@@ -120,7 +121,7 @@ class MENUITEMINFO(ctypes.Structure):
                 ("cch", ctypes.c_uint),
                 ("hbmpItem", HANDLE),
                ]
-               
+
 class MSG(ctypes.Structure):
     _fields_ = [("hwnd", HANDLE),
                 ("message", ctypes.c_uint),
@@ -129,7 +130,7 @@ class MSG(ctypes.Structure):
                 ("time", ctypes.c_ulong),
                 ("pt", POINT),
                ]
-               
+
 class NOTIFYICONDATA(ctypes.Structure):
     _fields_ = [("cbSize", ctypes.c_uint),
                 ("hWnd", HANDLE),
@@ -147,7 +148,7 @@ class NOTIFYICONDATA(ctypes.Structure):
                 ("guidItem", ctypes.c_char * 16),
                 ("hBalloonIcon", HANDLE),
                ]
-               
+
 def PackMENUITEMINFO(text=None, hbmpItem=None, wID=None, hSubMenu=None):
     res = MENUITEMINFO()
     res.cbSize = ctypes.sizeof(res)
@@ -166,16 +167,16 @@ def PackMENUITEMINFO(text=None, hbmpItem=None, wID=None, hSubMenu=None):
         res.fMask |= MIIM_SUBMENU
         res.hSubMenu = hSubMenu
     return res
-    
+
 def LOWORD(w):
     return w & 0xFFFF
-    
+
 def PumpMessages():
     msg = MSG()
     while GetMessage(ctypes.byref(msg), None, 0, 0) > 0:
         TranslateMessage(ctypes.byref(msg))
         DispatchMessage(ctypes.byref(msg))
-        
+
 def NotifyData(hWnd=0, uID=0, uFlags=0, uCallbackMessage=0, hIcon=0, szTip=""):
     szTip = convert_to_ascii(szTip)
     res = NOTIFYICONDATA()
