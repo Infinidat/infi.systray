@@ -1,16 +1,16 @@
 import ctypes
 
-RegisterWindowMessage = ctypes.windll.user32.RegisterWindowMessageA
-LoadCursor = ctypes.windll.user32.LoadCursorA
-LoadIcon = ctypes.windll.user32.LoadIconA
-LoadImage = ctypes.windll.user32.LoadImageA
-RegisterClass = ctypes.windll.user32.RegisterClassA
-CreateWindowEx = ctypes.windll.user32.CreateWindowExA
+RegisterWindowMessage = ctypes.windll.user32.RegisterWindowMessageW
+LoadCursor = ctypes.windll.user32.LoadCursorW
+LoadIcon = ctypes.windll.user32.LoadIconW
+LoadImage = ctypes.windll.user32.LoadImageW
+RegisterClass = ctypes.windll.user32.RegisterClassW
+CreateWindowEx = ctypes.windll.user32.CreateWindowExW
 UpdateWindow = ctypes.windll.user32.UpdateWindow
-DefWindowProc = ctypes.windll.user32.DefWindowProcA
+DefWindowProc = ctypes.windll.user32.DefWindowProcW
 GetSystemMetrics = ctypes.windll.user32.GetSystemMetrics
-InsertMenuItem = ctypes.windll.user32.InsertMenuItemA
-PostMessage = ctypes.windll.user32.PostMessageA
+InsertMenuItem = ctypes.windll.user32.InsertMenuItemW
+PostMessage = ctypes.windll.user32.PostMessageW
 PostQuitMessage = ctypes.windll.user32.PostQuitMessage
 SetMenuDefaultItem = ctypes.windll.user32.SetMenuDefaultItem
 GetCursorPos = ctypes.windll.user32.GetCursorPos
@@ -26,11 +26,11 @@ DrawIconEx = ctypes.windll.user32.DrawIconEx
 SelectObject = ctypes.windll.gdi32.SelectObject
 DeleteDC = ctypes.windll.gdi32.DeleteDC
 DestroyWindow = ctypes.windll.user32.DestroyWindow
-GetModuleHandle = ctypes.windll.kernel32.GetModuleHandleA
-GetMessage = ctypes.windll.user32.GetMessageA
+GetModuleHandle = ctypes.windll.kernel32.GetModuleHandleW
+GetMessage = ctypes.windll.user32.GetMessageW
 TranslateMessage = ctypes.windll.user32.TranslateMessage
-DispatchMessage = ctypes.windll.user32.DispatchMessageA
-Shell_NotifyIcon = ctypes.windll.shell32.Shell_NotifyIcon
+DispatchMessage = ctypes.windll.user32.DispatchMessageW
+Shell_NotifyIcon = ctypes.windll.shell32.Shell_NotifyIconW
 DestroyIcon = ctypes.windll.user32.DestroyIcon
 
 NIM_ADD = 0
@@ -82,8 +82,8 @@ HANDLE = ctypes.c_void_p
 
 def convert_to_ascii(s):
     try:
-        return bytes(s, "ascii")
-    except:
+        return s.decode("utf-8")
+    except AttributeError:
         return s
 
 LPFN_WNDPROC = ctypes.CFUNCTYPE(LRESULT, HANDLE, ctypes.c_uint, WPARAM, LPARAM)
@@ -96,8 +96,8 @@ class WNDCLASS(ctypes.Structure):
                 ("hIcon", HANDLE),
                 ("hCursor", HANDLE),
                 ("hbrBackground", HANDLE),
-                ("lpszMenuName", ctypes.c_char_p),
-                ("lpszClassName", ctypes.c_char_p),
+                ("lpszMenuName", ctypes.c_wchar_p),
+                ("lpszClassName", ctypes.c_wchar_p),
                ]
 
 class POINT(ctypes.Structure):
@@ -117,7 +117,7 @@ class MENUITEMINFO(ctypes.Structure):
                 ("hbmpChecked", HANDLE),
                 ("hbmpUnchecked", HANDLE),
                 ("dwItemData", ctypes.c_void_p),
-                ("dwTypeData", ctypes.c_char_p),
+                ("dwTypeData", ctypes.c_wchar_p),
                 ("cch", ctypes.c_uint),
                 ("hbmpItem", HANDLE),
                ]
@@ -138,12 +138,12 @@ class NOTIFYICONDATA(ctypes.Structure):
                 ("uFlags", ctypes.c_uint),
                 ("uCallbackMessage", ctypes.c_uint),
                 ("hIcon", HANDLE),
-                ("szTip", ctypes.c_char * 64),
+                ("szTip", ctypes.c_wchar * 128),
                 ("dwState", ctypes.c_uint),
                 ("dwStateMask", ctypes.c_uint),
-                ("szInfo", ctypes.c_char * 256),
+                ("szInfo", ctypes.c_wchar * 256),
                 ("uTimeout", ctypes.c_uint),
-                ("szInfoTitle", ctypes.c_char * 64),
+                ("szInfoTitle", ctypes.c_wchar * 64),
                 ("dwInfoFlags", ctypes.c_uint),
                 ("guidItem", ctypes.c_char * 16),
                 ("hBalloonIcon", HANDLE),

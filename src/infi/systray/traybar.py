@@ -32,7 +32,7 @@ class SysTrayIcon(object):
 
         self._default_menu_index = (default_menu_index or 0)
         self._window_class_name = convert_to_ascii(window_class_name)
-        self._message_dict = {RegisterWindowMessage("TaskbarCreated"): self._restart,
+        self._message_dict = {RegisterWindowMessage(u"TaskbarCreated"): self._restart,
                               WM_DESTROY: self._destroy,
                               WM_CLOSE: self._destroy,
                               WM_COMMAND: self._command,
@@ -217,7 +217,7 @@ class SysTrayIcon(object):
                 item = PackMENUITEMINFO(text=option_text,
                                         hbmpItem=option_icon,
                                         hSubMenu=submenu)
-                InsertMenuItem(menu, 0, 1,  ctypes.byref(item))
+                InsertMenuItem(menu, 0, 1, ctypes.byref(item))
 
     def _load_menu_icon(self, icon):
         icon = convert_to_ascii(icon)
