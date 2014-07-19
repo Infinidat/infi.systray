@@ -31,7 +31,7 @@ class SysTrayIcon(object):
         window_class_name = window_class_name or ("SysTrayIconPy-%s" % (str(uuid.uuid4())))
 
         self._default_menu_index = (default_menu_index or 0)
-        self._window_class_name = convert_to_ascii(window_class_name)
+        self._window_class_name = convert_to_unicode(window_class_name)
         self._message_dict = {RegisterWindowMessage(u"TaskbarCreated"): self._restart,
                               WM_DESTROY: self._destroy,
                               WM_CLOSE: self._destroy,
@@ -134,7 +134,7 @@ class SysTrayIcon(object):
         # Try and find a custom icon
         if self._icon is not None and os.path.isfile(self._icon):
             icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
-            icon = convert_to_ascii(self._icon)
+            icon = convert_to_unicode(self._icon)
             hicon = self._hicon = LoadImage(0, icon, IMAGE_ICON, 0, 0, icon_flags)
         if hicon == 0:
             # Can't find icon file - using default
@@ -220,7 +220,7 @@ class SysTrayIcon(object):
                 InsertMenuItem(menu, 0, 1, ctypes.byref(item))
 
     def _load_menu_icon(self, icon):
-        icon = convert_to_ascii(icon)
+        icon = convert_to_unicode(icon)
         # First load the icon.
         ico_x = GetSystemMetrics(SM_CXSMICON)
         ico_y = GetSystemMetrics(SM_CYSMICON)

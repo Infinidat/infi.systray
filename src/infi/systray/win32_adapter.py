@@ -80,7 +80,7 @@ elif ctypes.sizeof(ctypes.c_longlong) == ctypes.sizeof(ctypes.c_void_p):
     LRESULT = ctypes.c_longlong
 HANDLE = ctypes.c_void_p
 
-def convert_to_ascii(s):
+def convert_to_unicode(s):
     try:
         return s.decode("utf-8")
     except AttributeError:
@@ -160,7 +160,7 @@ def PackMENUITEMINFO(text=None, hbmpItem=None, wID=None, hSubMenu=None):
         res.fMask |= MIIM_ID
         res.wID = wID
     if text is not None:
-        text = convert_to_ascii(text)
+        text = convert_to_unicode(text)
         res.fMask |= MIIM_STRING
         res.dwTypeData = text
     if hSubMenu is not None:
@@ -178,7 +178,7 @@ def PumpMessages():
         DispatchMessage(ctypes.byref(msg))
 
 def NotifyData(hWnd=0, uID=0, uFlags=0, uCallbackMessage=0, hIcon=0, szTip=""):
-    szTip = convert_to_ascii(szTip)
+    szTip = convert_to_unicode(szTip)
     res = NOTIFYICONDATA()
     res.cbSize = ctypes.sizeof(res)
     res.hWnd = hWnd
