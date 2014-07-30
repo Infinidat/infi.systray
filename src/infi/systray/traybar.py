@@ -1,5 +1,5 @@
 import os
-from win32_adapter import *
+from .win32_adapter import *
 import threading
 import uuid
 
