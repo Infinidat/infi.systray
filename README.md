@@ -16,11 +16,25 @@ Creating an icon with one option in the context menu:
 The first parameter to SysTrayIcon is a path to the icon to show in the systray. If the icon is not found, or
 if None is specified, a default system icon will be displayed.
 The second parameter is the hover text to show when the mouse is hovered over the systray icon.
-The traybar will run in its own thread, so the using script can continue to run. To destroy the icon when
-the program ends, call
+The traybar will run in its own thread, so the using script can continue to run. 
+
+The icon and/or hover text can be updated using the update() method with the appropriate `hover_text` or `icon` keyword argument:
+
+    for item in ['item1', 'item2', 'item3']:
+        systray.update(hover_text=item)
+        do_something(item)
+
+To destroy the icon when the program ends, call
 
     systray.shutdown()
     
+Using SysTrayIcon as a context manager enables automatic termination of the tray if the parent thread is closed or unexpectedly exits.
+
+    with SysTrayIcon(icon, hover_text) as systray:
+      for item in ['item1', 'item2', 'item3']:
+          systray.update(hover_text=item)
+          do_something(item)
+   
 A "Quit" command is always appended to the end of the icon context menu, after the menu options specified by the user.
 To perform operations when Quit is selected, pass "on_quit=callback" as a parameter, e.g.:
 
