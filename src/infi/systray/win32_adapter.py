@@ -1,4 +1,6 @@
 import ctypes
+import locale
+import sys
 
 RegisterWindowMessage = ctypes.windll.user32.RegisterWindowMessageA
 LoadCursor = ctypes.windll.user32.LoadCursorA
@@ -80,11 +82,25 @@ elif ctypes.sizeof(ctypes.c_longlong) == ctypes.sizeof(ctypes.c_void_p):
     LRESULT = ctypes.c_longlong
 HANDLE = ctypes.c_void_p
 
-def convert_to_ascii(s):
+# On Win 2000 and later, tray hover text can be 128 characters, otherwise 64
+# https://msdn.microsoft.com/en-us/library/windows/desktop/bb773352%28v=vs.85%29.aspx
+# https://msdn.microsoft.com/en-us/library/ms724834%28v=vs.85%29.aspx
+if sys.getwindowsversion().major >= 5:
+    SZTIP_MAX_LENGTH = 128 
+else:
+    SZTIP_MAX_LENGTH = 64
+    
+LOCALE_ENCODING = locale.getpreferredencoding()
+
+
+def encode_for_locale(s):
+    """
+    Encode text items for system locale. If encoding fails, fall back to ASCII.
+    """
     try:
-        return bytes(s, "ascii")
-    except:
-        return s
+        return s.encode(LOCALE_ENCODING, 'ignore')
+    except (AttributeError, UnicodeDecodeError):
+        return s.decode('ascii', 'ignore').encode(LOCALE_ENCODING)
 
 LPFN_WNDPROC = ctypes.CFUNCTYPE(LRESULT, HANDLE, ctypes.c_uint, WPARAM, LPARAM)
 class WNDCLASS(ctypes.Structure):
@@ -138,7 +154,7 @@ class NOTIFYICONDATA(ctypes.Structure):
                 ("uFlags", ctypes.c_uint),
                 ("uCallbackMessage", ctypes.c_uint),
                 ("hIcon", HANDLE),
-                ("szTip", ctypes.c_char * 64),
+                ("szTip", ctypes.c_char * SZTIP_MAX_LENGTH),
                 ("dwState", ctypes.c_uint),
                 ("dwStateMask", ctypes.c_uint),
                 ("szInfo", ctypes.c_char * 256),
@@ -160,7 +176,7 @@ def PackMENUITEMINFO(text=None, hbmpItem=None, wID=None, hSubMenu=None):
         res.fMask |= MIIM_ID
         res.wID = wID
     if text is not None:
-        text = convert_to_ascii(text)
+        text = encode_for_locale(text)
         res.fMask |= MIIM_STRING
         res.dwTypeData = text
     if hSubMenu is not None:
@@ -178,7 +194,7 @@ def PumpMessages():
         DispatchMessage(ctypes.byref(msg))
 
 def NotifyData(hWnd=0, uID=0, uFlags=0, uCallbackMessage=0, hIcon=0, szTip=""):
-    szTip = convert_to_ascii(szTip)
+    szTip = encode_for_locale(szTip)[:SZTIP_MAX_LENGTH]
     res = NOTIFYICONDATA()
     res.cbSize = ctypes.sizeof(res)
     res.hWnd = hWnd
