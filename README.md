@@ -28,12 +28,12 @@ To destroy the icon when the program ends, call
 
     systray.shutdown()
     
-Using SysTrayIcon as a context manager enables automatic termination of the tray if the parent thread is closed or unexpectedly exits.
+SysTrayIcon can be used as a context manager to start and shutdown the tray, which also prevents hung tray threads should the parent thread fail or otherwise not close the tray process:
 
-    with SysTrayIcon(icon, hover_text) as systray:
-      for item in ['item1', 'item2', 'item3']:
-          systray.update(hover_text=item)
-          do_something(item)
+        with SysTrayIcon(icon, hover_text) as systray:
+            for item in ['item1', 'item2', 'item3']:
+                systray.update(hover_text=item)
+                do_something(item)
    
 A "Quit" command is always appended to the end of the icon context menu, after the menu options specified by the user.
 To perform operations when Quit is selected, pass "on_quit=callback" as a parameter, e.g.:
@@ -78,6 +78,7 @@ value of an option, instead of passing a callback function. e.g.
 Note that in the previous examples, if no code is executed after calling systray.start(), the main thread will
 exit and the icon thread will continue to exist until the Quit option is selected. In order to catch keyboard
 interrupts, some code must be written that will call systray.shutdown when the program should quit.
+Using SysTrayIcon as a context manager automates the start and shutdown of the tray.
 
 This module can only be used in Windows systems, otherwise the import statement will fail.
 
