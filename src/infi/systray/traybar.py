@@ -8,15 +8,15 @@ class SysTrayIcon(object):
     menu_options: tuple of tuples (menu text, menu icon path or None, function name)
     
     menu text and tray hover text should be Unicode
-    hover_text is limited to 64 characters; longer text will be truncated
+    hover_text length is limited to 128; longer text will be truncated
 
-    Use as context manager to enable automatic termination of tray
+    Can be used as context manager to enable automatic termination of tray
     if parent thread is closed:
 
-    > with SysTrayIcon(icon, hover_text) as systray:
-    >   for item in ['item1', 'item2', 'item3']:
-    >       systray.update(hover_text=item)
-    >       do_something(item)
+        with SysTrayIcon(icon, hover_text) as systray:
+            for item in ['item1', 'item2', 'item3']:
+                systray.update(hover_text=item)
+                do_something(item)
    
     """
     QUIT = 'QUIT'
@@ -122,7 +122,7 @@ class SysTrayIcon(object):
         PostMessage(self._hwnd, WM_CLOSE, 0, 0)
         self._message_loop_thread.join()
 
-    def update(self, hover_text=None, icon=None):
+    def update(self, icon=None, hover_text=None):
         """ update icon image and/or hover text """
         if hover_text:
             self._hover_text = hover_text
@@ -191,14 +191,21 @@ class SysTrayIcon(object):
         self._refresh_icon()
 
     def _destroy(self, hwnd, msg, wparam, lparam):
+        self._terminate()
+
+    def _terminate(self):
+        # TODO * release self._menu with DestroyMenu and reset the member
+        #      * release self._hicon with DestoryIcon and reset the member
+        #      * release loaded menu icons (loaded in _load_menu_icon) with DeleteObject
+        #        (we don't keep those objects anywhere now)
         if self._on_quit:
             self._on_quit(self)
         nid = NotifyData(self._hwnd, 0)
         Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
         PostQuitMessage(0)  # Terminate the app.
+        DestroyWindow(self._hwnd)
         self._hwnd = None
         self._notify_id = None
-
 
     def _notify(self, hwnd, msg, wparam, lparam):
         if lparam == WM_LBUTTONDBLCLK:
@@ -277,10 +284,7 @@ class SysTrayIcon(object):
     def _execute_menu_option(self, id):
         menu_action = self._menu_actions_by_id[id]
         if menu_action == SysTrayIcon.QUIT:
-            nid = NotifyData(self._hwnd, 0)
-            Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
-            PostQuitMessage(0)  # Terminate the app.
-            DestroyWindow(self._hwnd)
+            self._terminate()
         else:
             menu_action(self)
 
