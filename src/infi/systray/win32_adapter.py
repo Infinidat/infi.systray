@@ -82,14 +82,7 @@ elif ctypes.sizeof(ctypes.c_longlong) == ctypes.sizeof(ctypes.c_void_p):
     LRESULT = ctypes.c_longlong
 HANDLE = ctypes.c_void_p
 
-# On Win 2000 and later, tray hover text can be 128 characters, otherwise 64
-# https://msdn.microsoft.com/en-us/library/windows/desktop/bb773352%28v=vs.85%29.aspx
-# https://msdn.microsoft.com/en-us/library/ms724834%28v=vs.85%29.aspx
-if sys.getwindowsversion().major >= 5:
-    SZTIP_MAX_LENGTH = 128 
-else:
-    SZTIP_MAX_LENGTH = 64
-    
+SZTIP_MAX_LENGTH = 128
 LOCALE_ENCODING = locale.getpreferredencoding()
 
 
@@ -159,11 +152,14 @@ class NOTIFYICONDATA(ctypes.Structure):
                 ("dwStateMask", ctypes.c_uint),
                 ("szInfo", ctypes.c_char * 256),
                 ("uTimeout", ctypes.c_uint),
+                # UINT  uVersion;  // used with NIM_SETVERSION, values 0, 3, 4
                 ("szInfoTitle", ctypes.c_char * 64),
                 ("dwInfoFlags", ctypes.c_uint),
                 ("guidItem", ctypes.c_char * 16),
-                ("hBalloonIcon", HANDLE),
                ]
+    if sys.getwindowsversion().major >= 5:
+        _fields_.append(("hBalloonIcon", HANDLE))
+
 
 def PackMENUITEMINFO(text=None, hbmpItem=None, wID=None, hSubMenu=None):
     res = MENUITEMINFO()
