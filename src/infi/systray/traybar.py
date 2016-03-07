@@ -191,19 +191,11 @@ class SysTrayIcon(object):
         self._refresh_icon()
 
     def _destroy(self, hwnd, msg, wparam, lparam):
-        self._terminate()
-
-    def _terminate(self):
-        # TODO * release self._menu with DestroyMenu and reset the member
-        #      * release self._hicon with DestoryIcon and reset the member
-        #      * release loaded menu icons (loaded in _load_menu_icon) with DeleteObject
-        #        (we don't keep those objects anywhere now)
         if self._on_quit:
             self._on_quit(self)
         nid = NotifyData(self._hwnd, 0)
         Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
         PostQuitMessage(0)  # Terminate the app.
-        DestroyWindow(self._hwnd)
         self._hwnd = None
         self._notify_id = None
 
@@ -284,7 +276,10 @@ class SysTrayIcon(object):
     def _execute_menu_option(self, id):
         menu_action = self._menu_actions_by_id[id]
         if menu_action == SysTrayIcon.QUIT:
-            self._terminate()
+            nid = NotifyData(self._hwnd, 0)
+            Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
+            PostQuitMessage(0)  # Terminate the app.
+            DestroyWindow(self._hwnd)
         else:
             menu_action(self)
 
