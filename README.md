@@ -16,11 +16,25 @@ Creating an icon with one option in the context menu:
 The first parameter to SysTrayIcon is a path to the icon to show in the systray. If the icon is not found, or
 if None is specified, a default system icon will be displayed.
 The second parameter is the hover text to show when the mouse is hovered over the systray icon.
-The traybar will run in its own thread, so the using script can continue to run. To destroy the icon when
-the program ends, call
+The traybar will run in its own thread, so the using script can continue to run. 
+
+The icon and/or hover text can be updated using the update() method with the appropriate `hover_text` or `icon` keyword argument:
+
+    for item in ['item1', 'item2', 'item3']:
+        systray.update(hover_text=item)
+        do_something(item)
+
+To destroy the icon when the program ends, call
 
     systray.shutdown()
     
+SysTrayIcon can be used as a context manager to start and shutdown the tray, which also prevents hung tray threads should the parent thread fail or otherwise not close the tray process:
+
+        with SysTrayIcon(icon, hover_text) as systray:
+            for item in ['item1', 'item2', 'item3']:
+                systray.update(hover_text=item)
+                do_something(item)
+   
 A "Quit" command is always appended to the end of the icon context menu, after the menu options specified by the user.
 To perform operations when Quit is selected, pass "on_quit=callback" as a parameter, e.g.:
 
@@ -64,6 +78,7 @@ value of an option, instead of passing a callback function. e.g.
 Note that in the previous examples, if no code is executed after calling systray.start(), the main thread will
 exit and the icon thread will continue to exist until the Quit option is selected. In order to catch keyboard
 interrupts, some code must be written that will call systray.shutdown when the program should quit.
+Using SysTrayIcon as a context manager automates the start and shutdown of the tray.
 
 This module can only be used in Windows systems, otherwise the import statement will fail.
 
