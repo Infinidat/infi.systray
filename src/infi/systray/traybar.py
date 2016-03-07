@@ -6,7 +6,7 @@ import uuid
 class SysTrayIcon(object):
     """
     menu_options: tuple of tuples (menu text, menu icon path or None, function name)
-    
+
     menu text and tray hover text should be Unicode
     hover_text length is limited to 128; longer text will be truncated
 
@@ -17,7 +17,7 @@ class SysTrayIcon(object):
             for item in ['item1', 'item2', 'item3']:
                 systray.update(hover_text=item)
                 do_something(item)
-   
+
     """
     QUIT = 'QUIT'
     SPECIAL_ACTIONS = [QUIT]
@@ -124,11 +124,11 @@ class SysTrayIcon(object):
 
     def update(self, icon=None, hover_text=None):
         """ update icon image and/or hover text """
-        if hover_text:
-            self._hover_text = hover_text
         if icon:
             self._icon = icon
             self._load_icon()
+        if hover_text:
+            self._hover_text = hover_text
         self._refresh_icon()
 
     def _add_ids_to_menu_options(self, menu_options):
@@ -152,7 +152,7 @@ class SysTrayIcon(object):
         # release previous icon, if a custom one was loaded
         # note: it's important *not* to release the icon if we loaded the default system icon (with
         # the LoadIcon function) - this is why we assign self._hicon only if it was loaded using LoadImage
-        if self._icon_shared == False and self._hicon != 0:
+        if not self._icon_shared and self._hicon != 0:
             DestroyIcon(self._hicon)
             self._hicon = 0
 
@@ -196,10 +196,10 @@ class SysTrayIcon(object):
         nid = NotifyData(self._hwnd, 0)
         Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
         PostQuitMessage(0)  # Terminate the app.
-         # TODO * release self._menu with DestroyMenu and reset the memeber
-         #      * release self._hicon with DestoryIcon and reset the member
-         #      * release loaded menu icons (loaded in _load_menu_icon) with DeleteObject
-         #        (we don't keep those objects anywhere now)
+        # TODO * release self._menu with DestroyMenu and reset the memeber
+        #      * release self._hicon with DestoryIcon and reset the member
+        #      * release loaded menu icons (loaded in _load_menu_icon) with DeleteObject
+        #        (we don't keep those objects anywhere now)
         self._hwnd = None
         self._notify_id = None
 
@@ -280,9 +280,6 @@ class SysTrayIcon(object):
     def _execute_menu_option(self, id):
         menu_action = self._menu_actions_by_id[id]
         if menu_action == SysTrayIcon.QUIT:
-            nid = NotifyData(self._hwnd, 0)
-            Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
-            PostQuitMessage(0)  # Terminate the app.
             DestroyWindow(self._hwnd)
         else:
             menu_action(self)
