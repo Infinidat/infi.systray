@@ -152,7 +152,6 @@ class NOTIFYICONDATA(ctypes.Structure):
                 ("dwStateMask", ctypes.c_uint),
                 ("szInfo", ctypes.c_char * 256),
                 ("uTimeout", ctypes.c_uint),
-                # UINT  uVersion;  // used with NIM_SETVERSION, values 0, 3, 4
                 ("szInfoTitle", ctypes.c_char * 64),
                 ("dwInfoFlags", ctypes.c_uint),
                 ("guidItem", ctypes.c_char * 16),
