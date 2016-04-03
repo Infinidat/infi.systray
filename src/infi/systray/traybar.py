@@ -4,6 +4,21 @@ import threading
 import uuid
 
 class SysTrayIcon(object):
+    """
+    menu_options: tuple of tuples (menu text, menu icon path or None, function name)
+
+    menu text and tray hover text should be Unicode
+    hover_text length is limited to 128; longer text will be truncated
+
+    Can be used as context manager to enable automatic termination of tray
+    if parent thread is closed:
+
+        with SysTrayIcon(icon, hover_text) as systray:
+            for item in ['item1', 'item2', 'item3']:
+                systray.update(hover_text=item)
+                do_something(item)
+
+    """
     QUIT = 'QUIT'
     SPECIAL_ACTIONS = [QUIT]
 
@@ -18,6 +33,7 @@ class SysTrayIcon(object):
                  window_class_name=None):
 
         self._icon = icon
+        self._icon_shared = False
         self._hover_text = hover_text
         self._on_quit = on_quit
 
@@ -31,7 +47,7 @@ class SysTrayIcon(object):
         window_class_name = window_class_name or ("SysTrayIconPy-%s" % (str(uuid.uuid4())))
 
         self._default_menu_index = (default_menu_index or 0)
-        self._window_class_name = convert_to_ascii(window_class_name)
+        self._window_class_name = encode_for_locale(window_class_name)
         self._message_dict = {RegisterWindowMessage("TaskbarCreated"): self._restart,
                               WM_DESTROY: self._destroy,
                               WM_CLOSE: self._destroy,
@@ -45,6 +61,15 @@ class SysTrayIcon(object):
         self._window_class = None
         self._menu = None
         self._register_class()
+
+    def __enter__(self):
+        """Context manager so SysTray can automatically close"""
+        self.start()
+        return self
+
+    def __exit__(self, *args):
+        """Context manager so SysTray can automatically close"""
+        self.shutdown()
 
     def WndProc(self, hwnd, msg, wparam, lparam):
         hwnd = HANDLE(hwnd)
@@ -101,6 +126,7 @@ class SysTrayIcon(object):
         """ update icon image and/or hover text """
         if icon:
             self._icon = icon
+            self._load_icon()
         if hover_text:
             self._hover_text = hover_text
         self._refresh_icon()
@@ -126,25 +152,29 @@ class SysTrayIcon(object):
         # release previous icon, if a custom one was loaded
         # note: it's important *not* to release the icon if we loaded the default system icon (with
         # the LoadIcon function) - this is why we assign self._hicon only if it was loaded using LoadImage
-        # TODO don't reload if not necessary
-        if self._hicon != 0:
+        if not self._icon_shared and self._hicon != 0:
             DestroyIcon(self._hicon)
             self._hicon = 0
-        hicon = 0
+
         # Try and find a custom icon
+        hicon = 0
         if self._icon is not None and os.path.isfile(self._icon):
             icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
-            icon = convert_to_ascii(self._icon)
+            icon = encode_for_locale(self._icon)
             hicon = self._hicon = LoadImage(0, icon, IMAGE_ICON, 0, 0, icon_flags)
+            self._icon_shared = False
+
+        # Can't find icon file - using default shared icon
         if hicon == 0:
-            # Can't find icon file - using default
-            hicon = LoadIcon(0, IDI_APPLICATION)
-        return hicon
+            self._hicon = LoadIcon(0, IDI_APPLICATION)
+            self._icon_shared = True
+            self._icon = None
 
     def _refresh_icon(self):
         if self._hwnd is None:
             return
-        hicon = self._load_icon()
+        if self._hicon == 0:
+            self._load_icon()
         if self._notify_id:
             message = NIM_MODIFY
         else:
@@ -153,7 +183,7 @@ class SysTrayIcon(object):
                           0,
                           NIF_ICON | NIF_MESSAGE | NIF_TIP,
                           WM_USER+20,
-                          hicon,
+                          self._hicon,
                           self._hover_text)
         Shell_NotifyIcon(message, ctypes.byref(self._notify_id))
 
@@ -204,7 +234,7 @@ class SysTrayIcon(object):
     def _create_menu(self, menu, menu_options):
         for option_text, option_icon, option_action, option_id in menu_options[::-1]:
             if option_icon:
-                option_icon = self._load_menu_icon(option_icon)
+                option_icon = self._prep_menu_icon(option_icon)
 
             if option_id in self._menu_actions_by_id:
                 item = PackMENUITEMINFO(text=option_text,
@@ -219,8 +249,8 @@ class SysTrayIcon(object):
                                         hSubMenu=submenu)
                 InsertMenuItem(menu, 0, 1,  ctypes.byref(item))
 
-    def _load_menu_icon(self, icon):
-        icon = convert_to_ascii(icon)
+    def _prep_menu_icon(self, icon):
+        icon = encode_for_locale(icon)
         # First load the icon.
         ico_x = GetSystemMetrics(SM_CXSMICON)
         ico_y = GetSystemMetrics(SM_CYSMICON)
