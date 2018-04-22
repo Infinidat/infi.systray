@@ -1,4 +1,5 @@
 import ctypes
+import ctypes.wintypes
 import locale
 import sys
 
@@ -70,17 +71,13 @@ SM_CYSMICON = 50
 COLOR_MENU = 4
 DI_NORMAL = 3
 
-# WPARAM is defined as UINT_PTR (unsigned type)
-# LPARAM is defined as LONG_PTR (signed type)
+WPARAM = ctypes.wintypes.WPARAM
+LPARAM = ctypes.wintypes.LPARAM
+HANDLE = ctypes.wintypes.HANDLE
 if ctypes.sizeof(ctypes.c_long) == ctypes.sizeof(ctypes.c_void_p):
-    WPARAM = ctypes.c_ulong
-    LPARAM = ctypes.c_long
     LRESULT = ctypes.c_long
 elif ctypes.sizeof(ctypes.c_longlong) == ctypes.sizeof(ctypes.c_void_p):
-    WPARAM = ctypes.c_ulonglong
-    LPARAM = ctypes.c_longlong
     LRESULT = ctypes.c_longlong
-HANDLE = ctypes.c_void_p
 
 SZTIP_MAX_LENGTH = 128
 LOCALE_ENCODING = locale.getpreferredencoding()
@@ -94,6 +91,10 @@ def encode_for_locale(s):
         return s.encode(LOCALE_ENCODING, 'ignore')
     except (AttributeError, UnicodeDecodeError):
         return s.decode('ascii', 'ignore').encode(LOCALE_ENCODING)
+
+POINT = ctypes.wintypes.POINT
+RECT = ctypes.wintypes.RECT
+MSG = ctypes.wintypes.MSG
 
 LPFN_WNDPROC = ctypes.CFUNCTYPE(LRESULT, HANDLE, ctypes.c_uint, WPARAM, LPARAM)
 class WNDCLASS(ctypes.Structure):
@@ -109,13 +110,6 @@ class WNDCLASS(ctypes.Structure):
                 ("lpszClassName", ctypes.c_char_p),
                ]
 
-class POINT(ctypes.Structure):
-    _fields_ = [('x', ctypes.c_long), ('y', ctypes.c_long)]
-
-class RECT(ctypes.Structure):
-    _fields_ = [('left', ctypes.c_long), ('top', ctypes.c_long),
-                ('right', ctypes.c_long), ('bottom', ctypes.c_long)]
-
 class MENUITEMINFO(ctypes.Structure):
     _fields_ = [("cbSize", ctypes.c_uint),
                 ("fMask", ctypes.c_uint),
@@ -129,15 +123,6 @@ class MENUITEMINFO(ctypes.Structure):
                 ("dwTypeData", ctypes.c_char_p),
                 ("cch", ctypes.c_uint),
                 ("hbmpItem", HANDLE),
-               ]
-
-class MSG(ctypes.Structure):
-    _fields_ = [("hwnd", HANDLE),
-                ("message", ctypes.c_uint),
-                ("wParam", WPARAM),
-                ("lParam", LPARAM),
-                ("time", ctypes.c_ulong),
-                ("pt", POINT),
                ]
 
 class NOTIFYICONDATA(ctypes.Structure):
