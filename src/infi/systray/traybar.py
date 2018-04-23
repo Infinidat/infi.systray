@@ -37,12 +37,7 @@ class SysTrayIcon(object):
         self._hover_text = hover_text
         self._on_quit = on_quit
 
-        menu_options = menu_options or ()
-        menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT),)
-        self._next_action_id = SysTrayIcon.FIRST_ID
-        self._menu_actions_by_id = set()
-        self._menu_options = self._add_ids_to_menu_options(list(menu_options))
-        self._menu_actions_by_id = dict(self._menu_actions_by_id)
+        self._set_menu_options(menu_options)
 
         window_class_name = window_class_name or ("SysTrayIconPy-%s" % (str(uuid.uuid4())))
 
@@ -122,14 +117,29 @@ class SysTrayIcon(object):
         PostMessage(self._hwnd, WM_CLOSE, 0, 0)
         self._message_loop_thread.join()
 
-    def update(self, icon=None, hover_text=None):
-        """ update icon image and/or hover text """
+    def update(self, icon=None, hover_text=None, menu_options=None):
+        """ update icon image and/or hover text and/or menu options """
+        icon_refresh_needed = False
         if icon:
             self._icon = icon
             self._load_icon()
+            icon_refresh_needed = True
         if hover_text:
             self._hover_text = hover_text
-        self._refresh_icon()
+            icon_refresh_needed = True
+        if icon_refresh_needed:
+            self._refresh_icon()
+        if menu_options:
+            self._set_menu_options(menu_options)
+
+    def _set_menu_options(self, menu_options):
+        menu_options = menu_options or ()
+        menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT),)
+        self._next_action_id = SysTrayIcon.FIRST_ID
+        self._menu_actions_by_id = set()
+        self._menu_options = self._add_ids_to_menu_options(list(menu_options))
+        self._menu_actions_by_id = dict(self._menu_actions_by_id)
+        self._menu = None
 
     def _add_ids_to_menu_options(self, menu_options):
         result = []
