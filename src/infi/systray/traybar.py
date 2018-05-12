@@ -133,6 +133,8 @@ class SysTrayIcon(object):
             self._set_menu_options(menu_options)
 
     def _set_menu_options(self, menu_options):
+        if self._menu is not None:
+            DestroyMenu(self._menu)
         menu_options = menu_options or ()
         menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT),)
         self._next_action_id = SysTrayIcon.FIRST_ID
