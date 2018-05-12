@@ -37,6 +37,7 @@ class SysTrayIcon(object):
         self._hover_text = hover_text
         self._on_quit = on_quit
 
+        self._menu = None
         self._set_menu_options(menu_options)
 
         window_class_name = window_class_name or ("SysTrayIconPy-%s" % (str(uuid.uuid4())))
@@ -54,7 +55,6 @@ class SysTrayIcon(object):
         self._hicon = 0
         self._hinst = None
         self._window_class = None
-        self._menu = None
         self._register_class()
 
     def __enter__(self):
