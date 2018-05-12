@@ -208,9 +208,13 @@ class SysTrayIcon(object):
         nid = NotifyData(self._hwnd, 0)
         Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
         PostQuitMessage(0)  # Terminate the app.
-        # TODO * release self._menu with DestroyMenu and reset the memeber
-        #      * release self._hicon with DestoryIcon and reset the member
-        #      * release loaded menu icons (loaded in _load_menu_icon) with DeleteObject
+        if self._menu is not None:
+            DestroyMenu(self._menu)
+            self._menu = None
+        if self._hicon != 0:
+            DestroyIcon(self._hicon)
+            self._hicon = 0
+        # TODO * release loaded menu icons (loaded in _load_menu_icon) with DeleteObject
         #        (we don't keep those objects anywhere now)
         self._hwnd = None
         self._notify_id = None
