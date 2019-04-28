@@ -122,7 +122,7 @@ class SysTrayIcon(object):
         PostMessage(self._hwnd, WM_CLOSE, 0, 0)
         self._message_loop_thread.join()
 
-    def update(self, icon=None, hover_text=None, menu_options=None):  #  "menu_options=None" added to be allow the update of the menu options
+    def update(self, icon=None, hover_text=None, menu_options=None): 
         """ update icon image and/or hover text and/or menu options"""
         if icon:
             self._icon = icon
@@ -131,7 +131,6 @@ class SysTrayIcon(object):
             self._hover_text = hover_text
         # "if menu_options" added to be allow the update of the menu options
         if menu_options:
-            menu_options = menu_options or ()
             menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT),)
             self._next_action_id = SysTrayIcon.FIRST_ID
             self._menu_actions_by_id = set()
