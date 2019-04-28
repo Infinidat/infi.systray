@@ -122,14 +122,23 @@ class SysTrayIcon(object):
         PostMessage(self._hwnd, WM_CLOSE, 0, 0)
         self._message_loop_thread.join()
 
-    def update(self, icon=None, hover_text=None):
-        """ update icon image and/or hover text """
+    def update(self, icon=None, hover_text=None, menu_options=None): 
+        """ update icon image and/or hover text and/or menu options"""
         if icon:
             self._icon = icon
             self._load_icon()
         if hover_text:
             self._hover_text = hover_text
+        # "if menu_options" added to be allow the update of the menu options
+        if menu_options:
+            menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT),)
+            self._next_action_id = SysTrayIcon.FIRST_ID
+            self._menu_actions_by_id = set()
+            self._menu_options = self._add_ids_to_menu_options(list(menu_options))
+            self._menu_actions_by_id = dict(self._menu_actions_by_id)
+            self._menu = None  # detroy the old menu created by right clicking the icon
         self._refresh_icon()
+
 
     def _add_ids_to_menu_options(self, menu_options):
         result = []
