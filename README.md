@@ -1,4 +1,4 @@
-# Overview
+# `infi.systray` [![](https://img.shields.io/pypi/v/infi.systray)](https://pypi.org/project/infi.systray/)
 
 This module implements a Windows system tray icon with a right-click context menu.
 
