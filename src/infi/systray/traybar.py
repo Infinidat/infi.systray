@@ -123,7 +123,7 @@ class SysTrayIcon(object):
 
         try:
             self._message_loop_thread.join()
-        except RunTimeError as err:
+        except RuntimeError as err:
             if err == "cannot join current thread":
                 return
 
