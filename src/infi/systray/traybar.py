@@ -123,9 +123,10 @@ class SysTrayIcon(object):
 
         try:
             self._message_loop_thread.join()
+            self._hwnd = None
         except RuntimeError as err:
             if err == "cannot join current thread":
-                return
+                self._hwnd = None
 
     def update(self, icon=None, hover_text=None):
         """ update icon image and/or hover text """
@@ -135,6 +136,12 @@ class SysTrayIcon(object):
         if hover_text:
             self._hover_text = hover_text
         self._refresh_icon()
+
+    def isAlive(self):
+        result = True
+        if self._hwnd == None:
+            result = False
+        return result
 
     def _add_ids_to_menu_options(self, menu_options):
         result = []
