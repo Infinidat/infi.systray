@@ -110,10 +110,10 @@ class SysTrayIcon(object):
         self._create_window()
         PumpMessages()
 
-    def start(self):
+    def start(self, daemon=False):
         if self._hwnd:
             return      # already started
-        self._message_loop_thread = threading.Thread(target=self._message_loop_func)
+        self._message_loop_thread = threading.Thread(target=self._message_loop_func, daemon=daemon)
         self._message_loop_thread.start()
 
     def shutdown(self):
