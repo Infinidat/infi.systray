@@ -39,6 +39,7 @@ class SysTrayIcon(object):
 
         menu_options = menu_options or ()
         menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT),)
+        self.menu_options_with_id = dict()
         self._next_action_id = SysTrayIcon.FIRST_ID
         self._menu_actions_by_id = set()
         self._menu_options = self._add_ids_to_menu_options(list(menu_options))
@@ -130,6 +131,9 @@ class SysTrayIcon(object):
         if hover_text:
             self._hover_text = hover_text
         self._refresh_icon()
+        
+    def get_options_menu_with_id(self):
+        return self.menu_options_with_id
 
     def _add_ids_to_menu_options(self, menu_options):
         result = []
@@ -138,6 +142,7 @@ class SysTrayIcon(object):
             if callable(option_action) or option_action in SysTrayIcon.SPECIAL_ACTIONS:
                 self._menu_actions_by_id.add((self._next_action_id, option_action))
                 result.append(menu_option + (self._next_action_id,))
+                self.menu_options_with_id[option_text] = self._next_action_id
             elif non_string_iterable(option_action):
                 result.append((option_text,
                                option_icon,
@@ -283,7 +288,7 @@ class SysTrayIcon(object):
         if menu_action == SysTrayIcon.QUIT:
             DestroyWindow(self._hwnd)
         else:
-            menu_action(self)
+            menu_action(self, id)
 
 def non_string_iterable(obj):
     try:
