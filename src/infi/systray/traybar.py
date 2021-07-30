@@ -283,7 +283,7 @@ class SysTrayIcon(object):
         if menu_action == SysTrayIcon.QUIT:
             DestroyWindow(self._hwnd)
         else:
-            menu_action(self)
+            menu_action(self, id)
 
 def non_string_iterable(obj):
     try:
