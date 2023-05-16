@@ -30,7 +30,8 @@ class SysTrayIcon(object):
                  menu_options=None,
                  on_quit=None,
                  default_menu_index=None,
-                 window_class_name=None):
+                 window_class_name=None,
+                 auto_quit_button=True):
 
         self._icon = icon
         self._icon_shared = False
@@ -38,7 +39,10 @@ class SysTrayIcon(object):
         self._on_quit = on_quit
 
         menu_options = menu_options or ()
-        menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT),)
+        
+        if auto_quit_button:
+            menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT),)
+        
         self._next_action_id = SysTrayIcon.FIRST_ID
         self._menu_actions_by_id = set()
         self._menu_options = self._add_ids_to_menu_options(list(menu_options))
