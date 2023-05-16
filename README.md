@@ -19,7 +19,7 @@ Creating an icon with one option in the context menu:
 ```python
 from infi.systray import SysTrayIcon
 def say_hello(systray):
-    print "Hello, World!"
+    print("Hello, World!")
 menu_options = (("Say Hello", None, say_hello),)
 systray = SysTrayIcon("icon.ico", "Example tray icon", menu_options)
 systray.start()
@@ -82,11 +82,11 @@ value of an option, instead of passing a callback function. e.g.
 from infi.systray import SysTrayIcon
 hover_text = "SysTrayIcon Demo"
 def hello(sysTrayIcon):
-    print "Hello World."
+    print("Hello World.")
 def simon(sysTrayIcon):
-    print "Hello Simon."
+    print("Hello Simon.")
 def bye(sysTrayIcon):
-    print 'Bye, then.'
+    print('Bye, then.')
 def do_nothing(sysTrayIcon):
     pass
 menu_options = (('Say Hello', "hello.ico", hello),
