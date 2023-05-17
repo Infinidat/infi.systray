@@ -1,21 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-[project]
-name = "simplesystray"
-version = "0.0.7"
-authors = [
-  { name="actorpus", email="alex@actorpus.com" },
+requires = [
+    "setuptools>=61",
+    "wheel"
 ]
-description = "Adds support for a simple icon on the system tray, clone of infi-systray but maintained"
-readme = "README.md"
-requires-python = ">=3.7"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-]
-
-[project.urls]
-"Homepage" = "https://github.com/actorpus/systrayv2"
-"Bug Tracker" = "https://github.com/actorpus/systrayv2/issues"
+build-backend = "setuptools.build_meta"
