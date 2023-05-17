@@ -1,1 +1,1 @@
-from traybar import SysTrayIcon
+from .traybar import SysTrayIcon
