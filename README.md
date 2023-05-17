@@ -1,26 +1,26 @@
-# `infi.systray` [![](https://img.shields.io/pypi/v/infi.systray)](https://pypi.org/project/infi.systray/)
+# `simplesystray` [![](https://img.shields.io/pypi/v/simplesystray)](https://pypi.org/project/simplesystray/)
 
 This module implements a Windows system tray icon with a right-click context menu.
 
 ## Installation
 
-To install infi.systray, run:
+To install simplesystray, run:
 
 ```
-pip install infi.systray
+pip install simplesystray
 ```
-
-Alternatively, you can use easy_install.
 
 ## Usage
 
-Creating an icon with one option in the context menu:
+### Creating an icon with one option in the context menu:
 
 ```python
-from infi.systray import SysTrayIcon
+from simplesystray import SysTrayIcon
+
 def say_hello(systray):
-    print "Hello, World!"
-menu_options = (("Say Hello", None, say_hello),)
+    print("Hello, World!")
+    
+menu_options = (("Say Hello", "hello.ico", say_hello),)
 systray = SysTrayIcon("icon.ico", "Example tray icon", menu_options)
 systray.start()
 ```
@@ -30,14 +30,33 @@ if None is specified, a default system icon will be displayed.
 The second parameter is the hover text to show when the mouse is hovered over the systray icon.
 The traybar will run in its own thread, so the using script can continue to run.
 
-The icon and/or hover text can be updated using the update() method with the appropriate `hover_text` or `icon` keyword argument:
+For the parameters of `menu_options`: cf the section **Menu** below
 
+### Updating : icon, hover text and/or menu options
+The icon and/or hover text and/or menu options can be updated using the update() method with the appropriate `hover_text` or `icon` or  `menu_options` keyword argument:
+
+#### Updating the hover_text:
 ```python
 for item in ['item1', 'item2', 'item3']:
     systray.update(hover_text=item)
     do_something(item)
 ```
 
+#### Updating the menu options:
+```python
+def say_hello(systray):
+    systray.update(menu_options=menu_optionsbye)
+    
+def say_bye(systray):
+    systray.update(menu_options=menu_optionshello)
+    
+menu_optionshello = (("Say Hello","hello.ico", say_hello),)
+menu_optionsbye = (("Say Bye", "bye.ico", say_bye),)
+systray = SysTrayIcon("icon.ico", "Hello/Bye", menu_optionshello)   
+systray.start()
+```
+
+### Shutting down
 To destroy the icon when the program ends, call
 
 ```python
@@ -59,6 +78,7 @@ To perform operations when Quit is selected, pass "on_quit=callback" as a parame
 ```python
 def on_quit_callback(systray):
     program.shutdown()
+    
 systray = SysTrayIcon("icon.ico", "Example tray icon", menu_options, on_quit=on_quit_callback)
 ```
 
@@ -79,22 +99,31 @@ It is possible to create sub-menus in the context menu by recursively passing a 
 value of an option, instead of passing a callback function. e.g.
 
 ```python
-from infi.systray import SysTrayIcon
+from simplesystray import SysTrayIcon
+
 hover_text = "SysTrayIcon Demo"
+
+
 def hello(sysTrayIcon):
-    print "Hello World."
+    print("Hello World.")
+    
 def simon(sysTrayIcon):
-    print "Hello Simon."
+    print("Hello Simon.")
+    
 def bye(sysTrayIcon):
-    print 'Bye, then.'
+    print('Bye, then.')
+    
 def do_nothing(sysTrayIcon):
     pass
+
+
 menu_options = (('Say Hello', "hello.ico", hello),
                 ('Do nothing', None, do_nothing),
                 ('A sub-menu', "submenu.ico", (('Say Hello to Simon', "simon.ico", simon),
                                                ('Do nothing', None, do_nothing),
                                               ))
                )
+
 sysTrayIcon = SysTrayIcon("main.ico", hover_text, menu_options, on_quit=bye, default_menu_index=1)
 sysTrayIcon.start()
 ```
@@ -108,14 +137,17 @@ This module can only be used in Windows systems, otherwise the import statement 
 
 ## Credit
 
-This module is adapted from an implementation by Simon Brunning, which in turn was adapted from Mark Hammond's
+This module is adapted from an implementation by Infinidat Ltd. this was a clone on Simon Brunning's version, which in turn was adapted from Mark Hammond's
 win32gui_taskbar.py and win32gui_menu.py demos from PyWin32.
 
-# Checking out the code
+[![CC BY 4.0][cc-by-shield]][cc-by]
 
-To run this code from the repository for development purposes, run the following:
+This work is licensed under a
+[Creative Commons Attribution 4.0 International License][cc-by].
 
-```
-easy_install -U infi.projector
-projector devenv build
-```
+[![CC BY 4.0][cc-by-image]][cc-by]
+
+[cc-by]: http://creativecommons.org/licenses/by/4.0/
+[cc-by-image]: https://i.creativecommons.org/l/by/4.0/88x31.png
+[cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
+

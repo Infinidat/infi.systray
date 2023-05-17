@@ -1,18 +1,30 @@
-from __future__ import print_function
-from infi.systray import SysTrayIcon
-import os
-import ctypes
+from simplesystray import SysTrayIcon
 
-icon_path = os.path.join(os.path.dirname(__file__), "test.ico")
-shutdown_called = False
-def on_quit(systray):
-    print("Bye")
-def do_example(systray):
-    print("Example")
-def on_about(systray):
-    ctypes.windll.user32.MessageBoxW(None, u"This is a test of infi.systray", u"About", 0)
+hover_text = "SysTrayIcon Demo"
 
-menu_options = (("Example", None, do_example),
-                ("About", None, on_about))
-systray = SysTrayIcon(icon_path, "Systray Test", menu_options, on_quit)
-systray.start()
+
+def hello(sysTrayIcon):
+    print("Hello World.")
+
+
+def simon(sysTrayIcon):
+    print("Hello Simon.")
+
+
+def bye(sysTrayIcon):
+    print('Bye, then.')
+
+
+def do_nothing(sysTrayIcon):
+    pass
+
+
+menu_options = (('Say Hello', "hello.ico", hello),
+                ('Do nothing', None, do_nothing),
+                ('A sub-menu', "submenu.ico", (('Say Hello to Simon', "simon.ico", simon),
+                                               ('Do nothing', None, do_nothing),
+                                               ))
+                )
+
+sysTrayIcon = SysTrayIcon("main.ico", hover_text, menu_options, on_quit=bye, default_menu_index=1)
+sysTrayIcon.start()

@@ -1,0 +1,1 @@
+from .traybar import SysTrayIcon
