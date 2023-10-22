@@ -97,7 +97,7 @@ menu_options = (('Say Hello', "hello.ico", hello, None),
                 ('A sub-menu', "submenu.ico", (('Say Hello to Simon', "simon.ico", simon, None),
                                                ('Do nothing', None, do_nothing, None),
                                               ), None),
-                ('Print something', None, print_params, "Something")
+                ('Print something', None, print_params, ("Something",))
                )
 sysTrayIcon = SysTrayIcon("main.ico", hover_text, menu_options, on_quit=bye, default_menu_index=1)
 sysTrayIcon.start()
