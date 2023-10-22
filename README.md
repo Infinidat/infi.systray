@@ -94,8 +94,8 @@ def print_params(text):
     print(text)
 menu_options = (('Say Hello', "hello.ico", hello, None),
                 ('Do nothing', None, do_nothing, None),
-                ('A sub-menu', "submenu.ico", (('Say Hello to Simon', "simon.ico", simon),
-                                               ('Do nothing', None, do_nothing),
+                ('A sub-menu', "submenu.ico", (('Say Hello to Simon', "simon.ico", simon, None),
+                                               ('Do nothing', None, do_nothing, None),
                                               ), None),
                 ('Print something', None, print_params, "Something")
                )
