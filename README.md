@@ -18,9 +18,9 @@ Creating an icon with one option in the context menu:
 
 ```python
 from infi.systray import SysTrayIcon
-def say_hello(systray):
-    print "Hello, World!"
-menu_options = (("Say Hello", None, say_hello),)
+def say_hello():
+    print("Hello, World!")
+menu_options = (("Say Hello", None, say_hello, None),)
 systray = SysTrayIcon("icon.ico", "Example tray icon", menu_options)
 systray.start()
 ```
@@ -57,7 +57,7 @@ A "Quit" command is always appended to the end of the icon context menu, after t
 To perform operations when Quit is selected, pass "on_quit=callback" as a parameter, e.g.:
 
 ```python
-def on_quit_callback(systray):
+def on_quit_callback():
     program.shutdown()
 systray = SysTrayIcon("icon.ico", "Example tray icon", menu_options, on_quit=on_quit_callback)
 ```
@@ -69,31 +69,35 @@ command may be changed to a different option by setting the parameter "default_m
 systray = SysTrayIcon("icon.ico", "Example tray icon", menu_options, default_menu_index=2)
 ```
 
-menu_options must be a list of 3-tuples. Each 3-tuple specifies a context menu options. The first value in each tuple
+menu_options must be a list of 4-tuples. Each 4-tuple specifies a context menu options. The first value in each tuple
 is the context menu string.
 Some versions of Windows can show icons next to each option in the context menu. This icon can be specified in
 the second value of the tuples. If None is passed, no icon is displayed for the option.
 The third value is the command to execute when the context menu is selected by the user.
+And the fourth value is a tuple of the arguments to pass to the function. If None is passed, no arguments will be passed.
 
-It is possible to create sub-menus in the context menu by recursively passing a list of 3-tuple options as the third
+It is possible to create sub-menus in the context menu by recursively passing a list of 4-tuple options as the third
 value of an option, instead of passing a callback function. e.g.
 
 ```python
 from infi.systray import SysTrayIcon
 hover_text = "SysTrayIcon Demo"
-def hello(sysTrayIcon):
-    print "Hello World."
-def simon(sysTrayIcon):
-    print "Hello Simon."
-def bye(sysTrayIcon):
-    print 'Bye, then.'
-def do_nothing(sysTrayIcon):
+def hello():
+    print("Hello World.")
+def simon():
+    print("Hello Simon.")
+def bye():
+    print("Bye, then.")
+def do_nothing():
     pass
-menu_options = (('Say Hello', "hello.ico", hello),
-                ('Do nothing', None, do_nothing),
+def print_params(text):
+    print(text)
+menu_options = (('Say Hello', "hello.ico", hello, None),
+                ('Do nothing', None, do_nothing, None),
                 ('A sub-menu', "submenu.ico", (('Say Hello to Simon', "simon.ico", simon),
                                                ('Do nothing', None, do_nothing),
-                                              ))
+                                              ), None),
+                ('Print something', None, print_params, "Something")
                )
 sysTrayIcon = SysTrayIcon("main.ico", hover_text, menu_options, on_quit=bye, default_menu_index=1)
 sysTrayIcon.start()
