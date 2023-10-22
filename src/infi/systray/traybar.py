@@ -5,7 +5,7 @@ import uuid
 
 class SysTrayIcon(object):
     """
-    menu_options: tuple of tuples (menu text, menu icon path or None, function name)
+    menu_options: tuple of tuples (menu text, menu icon path or None, function name, tuple of args or None)
 
     menu text and tray hover text should be Unicode
     hover_text length is limited to 128; longer text will be truncated
@@ -38,7 +38,7 @@ class SysTrayIcon(object):
         self._on_quit = on_quit
 
         menu_options = menu_options or ()
-        menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT),)
+        menu_options = menu_options + (('Quit', None, SysTrayIcon.QUIT, None),)
         self._next_action_id = SysTrayIcon.FIRST_ID
         self._menu_actions_by_id = set()
         self._menu_options = self._add_ids_to_menu_options(list(menu_options))
@@ -134,14 +134,15 @@ class SysTrayIcon(object):
     def _add_ids_to_menu_options(self, menu_options):
         result = []
         for menu_option in menu_options:
-            option_text, option_icon, option_action = menu_option
+            option_text, option_icon, option_action, option_args = menu_option
             if callable(option_action) or option_action in SysTrayIcon.SPECIAL_ACTIONS:
-                self._menu_actions_by_id.add((self._next_action_id, option_action))
+                self._menu_actions_by_id.add((self._next_action_id, (option_action, option_args)))
                 result.append(menu_option + (self._next_action_id,))
             elif non_string_iterable(option_action):
                 result.append((option_text,
                                option_icon,
                                self._add_ids_to_menu_options(option_action),
+                               option_args,
                                self._next_action_id))
             else:
                 raise Exception('Unknown item', option_text, option_icon, option_action)
@@ -193,7 +194,7 @@ class SysTrayIcon(object):
 
     def _destroy(self, hwnd, msg, wparam, lparam):
         if self._on_quit:
-            self._on_quit(self)
+            self._on_quit()
         nid = NotifyData(self._hwnd, 0)
         Shell_NotifyIcon(NIM_DELETE, ctypes.byref(nid))
         PostQuitMessage(0)  # Terminate the app.
@@ -233,7 +234,7 @@ class SysTrayIcon(object):
         PostMessage(self._hwnd, WM_NULL, 0, 0)
 
     def _create_menu(self, menu, menu_options):
-        for option_text, option_icon, option_action, option_id in menu_options[::-1]:
+        for option_text, option_icon, option_action, option_args, option_id in menu_options[::-1]:
             if option_icon:
                 option_icon = self._prep_menu_icon(option_icon)
 
@@ -279,11 +280,14 @@ class SysTrayIcon(object):
         self._execute_menu_option(id)
 
     def _execute_menu_option(self, id):
-        menu_action = self._menu_actions_by_id[id]
+        menu_action, args = self._menu_actions_by_id[id]
         if menu_action == SysTrayIcon.QUIT:
             DestroyWindow(self._hwnd)
         else:
-            menu_action(self)
+            if args:
+                menu_action(*args)
+            else:
+                menu_action()
 
 def non_string_iterable(obj):
     try:
